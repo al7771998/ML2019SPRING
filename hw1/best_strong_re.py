@@ -54,8 +54,8 @@ len_y = len(train_y)
 train_x = np.array(train_x)
 train_y = np.array(train_y).reshape((len_y,1))
 
-## Training(40,200000) & (40,100000)
-w,lr,times = np.ones((163,1)),0.4,100000 ##163 change to 91
+## Training(40,200000) & (40,100000) & (0.4,100000)
+w,lr,times = np.ones((163,1)),40,100000 ##163 change to 91
 prev_gra = 0.0
 lamb = 0.1
 while times > 0:
