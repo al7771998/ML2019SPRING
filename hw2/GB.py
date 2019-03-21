@@ -14,12 +14,12 @@ train_x = Data.values
 
 train_x = np.delete(train_x,[31,32,33,34,35,36,37],axis = 1)
 s_features = np.size(train_x,1)
-train_x = train_x.astype(float)
+'''train_x = train_x.astype(float)
 mean_i = np.sum(train_x, axis = 0) / np.size(train_x,0)
 var_i = np.var(train_x, axis = 0)
 for i in range(np.size(train_x,0)):
 	train_x[i] -= mean_i
-	train_x[i] /= np.sqrt(var_i)
+	train_x[i] /= np.sqrt(var_i)'''
 Data = pd.read_csv(sys.argv[4])
 train_y = Data.values
 train_y = column_or_1d(train_y)
@@ -87,21 +87,15 @@ for i in range(np.size(Data['?_workclass'].values)):
 Data.drop('?_workclass',axis = 1)'''
 test_x = Data.values
 test_x = np.delete(test_x,[31,32,33,34,35,36,37],axis = 1)
-test_x = test_x.astype(float)
+'''test_x = test_x.astype(float)
 mean_i = np.sum(test_x, axis = 0) / np.size(test_x,0)
 var_i = np.var(test_x, axis = 0)
 var_i[var_i == 0] = 1.0
 for i in range(np.size(test_x,0)):
 	test_x[i] -= mean_i
-	test_x[i] /= np.sqrt(var_i)
-#test_x = np.c_[test_x,np.ones((np.size(test_x,0),1))]
-'''test_x = test_x.astype(float)
-mean_i = np.sum(test_x, axis = 0) / np.size(test_x,0)
-var_i = np.var(test_x, axis = 0)
-var_i[var_i == 0.0] = 1.0
-for i in range(np.size(test_x,0)):
-	test_x[i] -= mean_i
 	test_x[i] /= np.sqrt(var_i)'''
+#test_x = np.c_[test_x,np.ones((np.size(test_x,0),1))]
+
 
 model1 = joblib.load('gb_model.pkl')
 
