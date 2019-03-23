@@ -7,7 +7,7 @@ from sklearn.externals import joblib
 from sklearn.utils.validation import column_or_1d
 random.seed(6187)#1475 2263 3487 5628 6639
 ##Training Part
-
+"""
 Data = pd.read_csv(sys.argv[3])
 
 train_x = Data.values
@@ -75,7 +75,7 @@ joblib.dump(model1, 'gb_model.pkl')
 #w = model.coef_.reshape((99,1))
 #np.save('skmodel',w)
 #w = np.load('skmodel.npy')
-
+"""
 ## Testing Part
 Data = pd.read_csv(sys.argv[5])
 #for i in marital_status:
