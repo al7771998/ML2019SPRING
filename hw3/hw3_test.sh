@@ -1,3 +1,3 @@
 #!/bin/bash
-curl -OL https://github.com/al7771998/ML2019SPRING/releases/download/0.0.0/model_final_3.h5
+wget -c "https://www.dropbox.com/s/ki5hs6qsjhvkvc3/model_final_3.h5?dl=1" -O model_final_3.h5
 python3 cnn_test.py $1 $2
