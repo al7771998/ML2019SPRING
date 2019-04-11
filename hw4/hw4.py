@@ -55,17 +55,18 @@ for i in range(7):
 
 #Filter visualization
 filt_im = np.zeros((1,48,48,1))
-step,iter_n = 0.2,250
-filters = model.layers[4].get_weights()[0][:,:,0,:]
+step,iter_n = 0.2,100
+#filters = model.layers[15].get_weights()[0][:,:,0,:]
 #plt.title('Filters of layer %s'%(model.layers[4].name))
-get_layer_output = K.function([model.input],[model.layers[4].output])
+get_layer_output = K.function([model.input],[model.layers[14].output])
 np.random.seed(1025)
 layer_output = get_layer_output([train_x[image_num].reshape(1,48,48,1)])[0]
-for i in range(64):
+for i in range(32):
+	#print(i)
 	if K.image_data_format() == 'channels_first':
-		loss = K.mean(model.layers[4].output[:, i, :, :])
+		loss = K.mean(model.layers[14].output[:, i, :, :])
 	else:
-		loss = K.mean(model.layers[4].output[:, :, :, i])
+		loss = K.mean(model.layers[14].output[:, :, :, i])
 	grads = K.gradients(loss, model.input)[0]
 	iterate = K.function([model.input], [loss, grads])
 	if K.image_data_format() == 'channels_first':
@@ -76,25 +77,25 @@ for i in range(64):
 		loss_value, grads_value = iterate([gauss])
 		gauss += grads_value * step
 	plt.figure(1)
-	plt.subplot(4,16,i+1)
+	plt.subplot(4,8,i+1)
 	plt.xticks([])
 	plt.yticks([])
-	plt.imshow(gauss.reshape((48,48)),interpolation="nearest",cmap="copper")
+	plt.imshow(gauss.reshape((48,48)),interpolation="nearest",cmap="pink")
 	if K.image_data_format() == 'channels_first':
 		filt_im = np.array(layer_output[0,i,:,:])
 	else:
 		filt_im = np.array(layer_output[0,:,:,i])
 	plt.figure(2)
-	plt.subplot(4,16,i+1)
+	plt.subplot(4,8,i+1)
 	plt.xticks([])
 	plt.yticks([])
-	plt.imshow(filt_im,interpolation="nearest",cmap="copper")
+	plt.imshow(filt_im,interpolation="nearest",cmap="pink")
 plt.figure(1)
-plt.suptitle('Filters of layer %s'%(model.layers[4].name))
+plt.suptitle('Filters of layer %s'%(model.layers[14].name))
 plt.savefig(sys.argv[2]+'fig2_1.jpg')
 plt.close()
 plt.figure(2)
-plt.suptitle('Output of layer %s (Given image %d)'%(model.layers[4].name, image_num))
+plt.suptitle('Output of layer %s (Given image %d)'%(model.layers[14].name, image_num))
 plt.savefig(sys.argv[2]+'fig2_2.jpg')
 plt.close()
 #Lime
