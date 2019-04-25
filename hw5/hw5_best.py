@@ -16,9 +16,9 @@ import numpy as np
 import sys
 Labels = pd.read_csv('labels.csv')
 Labels = Labels.iloc[:,3].values
-comp = 4.2 /225. 
-steps = 100
-eps = 1e-3 #這個差距不大
+#cmp = 4.2 /225. 
+steps = 40
+eps = 3e-4
 model = resnet50(pretrained=True).cuda()
 loss = nn.CrossEntropyLoss()
 model.eval();
@@ -27,6 +27,12 @@ image_num = 200
 succ = 0.0 
 imtotensor = T.ToTensor()
 tensortoim = T.ToPILImage()
+mean = [0.485, 0.456, 0.406]
+std = [0.229, 0.224, 0.225]
+rev_mean = [-0.485/0.229, -0.456/0.224, -0.406/0.225]
+rev_std = [1/0.229,1/0.224,1/0.225]
+normalize = T.Normalize(mean=mean,std=std)
+inv_norm = T.Normalize(mean=rev_mean,std = rev_std)
 seed = 21666
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
@@ -38,7 +44,10 @@ torch.backends.cudnn.deterministic = True
 for i in range(image_num):
     img = Image.open(sys.argv[1]+'/%03d.png'%(i)).convert('RGB')
     img_in = imtotensor(img)
+    img_in = normalize(img_in)
     img_in = img_in.unsqueeze(0).cuda()
+    x_min = torch.min(img_in)
+    x_max = torch.max(img_in)
     x = Variable(img_in, requires_grad = True)
     y_true = Labels[i]   
     y = Variable(torch.LongTensor([y_true]).cuda(), requires_grad=False)
@@ -47,28 +56,29 @@ for i in range(image_num):
         y_pred = model(x)
         gradient = loss(y_pred, y)
         gradient.backward(retain_graph=True)
+        #model.zero_grad()
         adv_x = x.data + eps * torch.sign(x.grad.data)
         noise = adv_x - img_in
-        noise = torch.clamp(noise, -comp, comp)
+        #noise = torch.clamp(noise, -cmp, cmp)
         x.data = img_in + noise
-        x.data = torch.clamp(x.data, 0., 1.)
-    img_adv = x.data.cpu()
-    img_out = tensortoim(img_adv[0])    
+        x.data = torch.clamp(x.data, x_min, x_max)
+    img_adv = x.data
+    img_adv = img_adv.cpu()
+    img_out = inv_norm(img_adv[0])
+    img_out = tensortoim(img_out)    
     img_out = np.asarray(img_out)
     saving = Image.fromarray(img_out)
     saving.save(sys.argv[2]+'/%03d.png'%(i))
     img_out = img_out.astype(np.int32)
-    img = img_in.cpu()
+    img = Image.open(sys.argv[1]+'/%03d.png'%(i)).convert('RGB')
     img = np.asarray(img)
-    img *= 255
-    img = np.rollaxis(img[0,:,:,:],0,3)
     img = img.astype(np.int32)
     L_inf += np.amax(np.abs(img_out - img))
-    print(L_inf / (i+1))
+    print(L_inf/(i+1))
     y_after, y_before = model(Variable(img_adv, requires_grad=True).cuda()).data.max(1)[1].cpu().numpy()[0]\
     ,model(Variable(img_in.cpu(), requires_grad=True).cuda()).data.max(1)[1].cpu().numpy()[0]
     print('y_before =  '+ str(y_before) + ', y_after = ' + str(y_after))
-    if y_after != y_before:
+    if y_after != y_before or (y_before != Labels[i]):
         succ += 1
     
 print(succ/image_num, L_inf/image_num)
